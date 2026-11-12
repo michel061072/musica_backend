@@ -54,4 +54,34 @@ app.post("/cadastrar", (request, response) => {
 
 })
 
+app.delete("/apagar/:id", (request, response) => {
+
+    const { id } = request.params;
+
+    const comandoDelete = "DELETE FROM musicas_michelnovakc WHERE id = ?";
+
+    sql.query(comandoDelete, [id], (error, resultado) => {
+
+        if (error) {
+            console.log(error);
+            return response.status(500).json({
+                mensagem: "Erro ao apagar música!"
+            });
+        }
+
+        if (resultado.affectedRows === 0) {
+            return response.status(404).json({
+                mensagem: "Música não encontrada!"
+            });
+        }
+
+        response.json({
+            mensagem: "Música apagada com sucesso!"
+        });
+
+    });
+
+});
+
+
 export default app;
