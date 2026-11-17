@@ -31,9 +31,7 @@ app.get("/", (request, response) => {
     });
 });
 
-app.listen(3000, () => {
-    console.log("Servidor online em http://localhost:3000");
-});
+
 
 app.post("/cadastrar", (request, response) => {
 
@@ -108,8 +106,10 @@ app.put("/editar/:id", (request, response) => {
 
     sql.query(comandoUpdate, [titulo, artista, genero, ano, duracao, id], (error) => {
         if (error) {
-            console.log(error)
-            return
+            console.log(error);
+            return response.status(500).json({
+                mensagem: "Erro ao editar música!"
+            });
         }
 
         response.json({ mensagem: "Música alterada com sucesso!" })
