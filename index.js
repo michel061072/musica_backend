@@ -17,49 +17,94 @@ const sql = mysql.createPool({
 });
 
 app.get("/", (request, response) => {
-    const comandoSelect = "SELECT * FROM musicas_michelnovakc";
+    const comando = "SELECT * FROM musicas_michelnovakc";
 
-    sql.query(comandoSelect, (error, data) => {
+    sql.query(comando, (error, dados) => {
         if (error) {
-            console.error(error);
+            console.log(error);
             return response.status(500).json({
-                erro: "Erro ao consultar as músicas"
+                mensagem: "Erro ao consultar músicas!"
             });
         }
 
-        response.json(data);
+        response.json(dados);
     });
 });
 
-
-
 app.post("/cadastrar", (request, response) => {
+    const { titulo, artista, genero, ano, duracao } = request.body;
 
-    const { titulo, artista, genero, ano, duracao } = request.body
+    const comando = "INSERT INTO musicas_michelnovakc (titulo, artista, genero, ano, duracao) VALUES (?, ?, ?, ?, ?)";
 
-    const comandoInsert = "INSERT INTO musicas_michelnovakc(titulo, artista, genero, ano, duracao) VALUES (?, ?, ?, ?, ?)"
-
-    sql.query(comandoInsert, [titulo, artista, genero, ano, duracao], (error) => {
-
+    sql.query(comando, [titulo, artista, genero, ano, duracao], (error) => {
         if (error) {
             console.log(error);
-            return response.status(500).json({ mensagem: "Erro ao cadastrar música!" })
+            return response.status(500).json({
+                mensagem: "Erro ao cadastrar música!"
+            });
         }
 
-        response.status(201).json({ mensagem: "Música cadastrada com sucesso!" })
+        response.status(201).json({
+            mensagem: "Música cadastrada com sucesso!"
+        });
+    });
+});
 
-    })
-
-})
-
-app.delete("/apagar/:id", (request, response) => {
-
+app.get("/musica/:id", (request, response) => {
     const { id } = request.params;
 
-    const comandoDelete = "DELETE FROM musicas_michelnovakc WHERE id = ?";
+    const comando = "SELECT * FROM musicas_michelnovakc WHERE id = ?";
 
-    sql.query(comandoDelete, [id], (error, resultado) => {
+    sql.query(comando, [id], (error, dados) => {
+        if (error) {
+            console.log(error);
+            return response.status(500).json({
+                mensagem: "Erro ao buscar música!"
+            });
+        }
 
+        if (dados.length === 0) {
+            return response.status(404).json({
+                mensagem: "Música não encontrada!"
+            });
+        }
+
+        response.json(dados[0]);
+    });
+});
+
+app.put("/editar/:id", (request, response) => {
+    const { id } = request.params;
+    const { titulo, artista, genero, ano, duracao } = request.body;
+
+    const comando = "UPDATE musicas_michelnovakc SET titulo = ?, artista = ?, genero = ?, ano = ?, duracao = ? WHERE id = ?";
+
+    sql.query(comando, [titulo, artista, genero, ano, duracao, id], (error, resultado) => {
+        if (error) {
+            console.log(error);
+            return response.status(500).json({
+                mensagem: "Erro ao editar música!"
+            });
+        }
+
+        if (resultado.affectedRows === 0) {
+            return response.status(404).json({
+                mensagem: "Música não encontrada!"
+            });
+        }
+
+        response.json({
+            mensagem: "Música alterada com sucesso!"
+        });
+    });
+});
+
+app.delete("/apagar/:id", (request, response) => {
+    const { id } = request.params;
+
+    const comando = "DELETE FROM musicas_michelnovakc WHERE id = ?";
+
+    sql.query(comando, [id], (error, resultado) => {
         if (error) {
             console.log(error);
             return response.status(500).json({
@@ -76,45 +121,7 @@ app.delete("/apagar/:id", (request, response) => {
         response.json({
             mensagem: "Música apagada com sucesso!"
         });
-
     });
-
 });
-
-app.get("/musica/:id", (request, response) => {
-
-    const { id } = request.params
-
-    const comandoSelect = "SELECT * FROM musicas_michelnovakc WHERE id = ?"
-
-    sql.query(comandoSelect, [id], (error, data) => {
-        if (error) {
-            console.log(error)
-            return
-        }
-
-        response.json(data[0])
-    })
-})
-
-app.put("/editar/:id", (request, response) => {
-
-    const { id } = request.params
-    const { titulo, artista, genero, ano, duracao } = request.body
-
-    const comandoUpdate = "UPDATE musicas_michelnovakc SET titulo = ?, artista = ?, genero = ?, ano = ?, duracao = ? WHERE id = ?"
-
-    sql.query(comandoUpdate, [titulo, artista, genero, ano, duracao, id], (error) => {
-        if (error) {
-            console.log(error);
-            return response.status(500).json({
-                mensagem: "Erro ao editar música!"
-            });
-        }
-
-        response.json({ mensagem: "Música alterada com sucesso!" })
-    })
-})
-
 
 export default app;
